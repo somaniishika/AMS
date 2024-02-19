@@ -1,1 +1,125 @@
+import os
+import pickle
+from datetime import datetime
+
+class Student:
+    def __init__(self, name, roll_number):
+        self.name = name
+        self.roll_number = roll_number
+        self.attendance = {}
+
+    def mark_attendance(self, date):
+        self.attendance[date] = True
+
+    def display_attendance(self):
+        print(f"Attendance for {self.name} ({self.roll_number}):")
+        for date, present in self.attendance.items():
+            status = "Present" if present else "Absent"
+            print(f"{date}: {status}")
+
+    def update_details(self, name, roll_number):
+        self.name = name
+        self.roll_number = roll_number
+
+class AttendanceSystem:
+    def __init__(self):
+        self.students = {}
+
+    def add_student(self, name, roll_number):
+        if roll_number not in self.students:
+            self.students[roll_number] = Student(name, roll_number)
+            print(f"Student {name} added successfully!")
+        else:
+            print("Student with this roll number already exists.")
+
+    def mark_attendance(self, roll_number, date):
+        student = self.students.get(roll_number)
+        if student:
+            student.mark_attendance(date)
+            print(f"Attendance marked for {student.name} on {date}.")
+        else:
+            print("Student not found.")
+
+    def display_student_attendance(self, roll_number):
+        student = self.students.get(roll_number)
+        if student:
+            student.display_attendance()
+        else:
+            print("Student not found.")
+
+    def update_student_details(self, roll_number, name, new_roll_number):
+        student = self.students.get(roll_number)
+        if student:
+            if new_roll_number != roll_number:
+                if new_roll_number in self.students:
+                    print("Roll number already exists for another student.")
+                    return
+                del self.students[roll_number]
+            student.update_details(name, new_roll_number)
+            self.students[new_roll_number] = student
+            print("Student details updated successfully.")
+        else:
+            print("Student not found.")
+
+    def save_data(self):
+        with open('attendance_data.pkl', 'wb') as file:
+            pickle.dump(self.students, file)
+            print("Data saved successfully.")
+
+    def load_data(self):
+        if os.path.exists('attendance_data.pkl'):
+            with open('attendance_data.pkl', 'rb') as file:
+                self.students = pickle.load(file)
+                print("Data loaded successfully.")
+        else:
+            print("No saved data found.")
+
+def main():
+    attendance_system = AttendanceSystem()
+    attendance_system.load_data()
+
+    while True:
+        print("\nStudent Attendance System")
+        print("1. Add Student")
+        print("2. Mark Attendance")
+        print("3. Display Student Attendance")
+        print("4. Update Student Details")
+        print("5. Save Data")
+        print("6. Exit")
+
+        choice = input("Enter your choice: ")
+
+        if choice == '1':
+            name = input("Enter student name: ")
+            roll_number = input("Enter roll number: ")
+            attendance_system.add_student(name, roll_number)
+
+        elif choice == '2':
+            roll_number = input("Enter roll number: ")
+            date = datetime.now().strftime("%Y-%m-%d")
+            attendance_system.mark_attendance(roll_number, date)
+
+        elif choice == '3':
+            roll_number = input("Enter roll number: ")
+            attendance_system.display_student_attendance(roll_number)
+
+        elif choice == '4':
+            roll_number = input("Enter roll number: ")
+            name = input("Enter new name: ")
+            new_roll_number = input("Enter new roll number: ")
+            attendance_system.update_student_details(roll_number, name, new_roll_number)
+
+        elif choice == '5':
+            attendance_system.save_data()
+
+        elif choice == '6':
+            attendance_system.save_data()
+            print("Exiting the program.")
+            break
+
+        else:
+            print("Invalid choice. Please enter a valid option.")
+
+if __name__ == "__main__":
+    main()
 
